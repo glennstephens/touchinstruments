@@ -96,10 +96,12 @@
     <BundleResource Include="Resources\SoundFonts\Warm_Lead_MDX7.sf2" />
     <BundleResource Include="Resources\SoundFonts\Zed_Bass_2PM.sf2" />
     <BundleResource Include="Resources\SoundFonts\Zero_Lead_MDX7.sf2" />
+    <BundleResource Include="Resources\pianoimg.jpg" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Resources\LaunchScreen.xib" />
     <InterfaceDefinition Include="Main.storyboard" />
+    <InterfaceDefinition Include="MainSplashScreenDisplay.storyboard" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />

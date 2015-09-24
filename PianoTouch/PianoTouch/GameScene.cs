@@ -11,6 +11,14 @@ using CoreMotion;
 
 namespace PianoTouch
 {
+	public enum NoteShape
+	{
+		LShape,
+		BlackNote,
+		MidNote,
+		ReverseLShape
+	}
+
 	public class GameScene : SKScene
 	{
 		public GameScene (IntPtr handle) : base (handle)
@@ -19,15 +27,11 @@ namespace PianoTouch
 
 		public override void DidMoveToView (SKView view)
 		{
-			// Create the Child Views
-			CreatePianoKeys ();
+			CreatePianoKeys (5 * 12 + 1, 8);
 
 			CreateOctaveKeys ();
 
 			CreateInfoText ();
-
-			// Setup your scene here
-			//SetupAccelerometer ();
 		}
 
 		nfloat totalWidth;
@@ -40,38 +44,128 @@ namespace PianoTouch
 		int[] placements = new int[] { 0, 1, 3, 4, 5 };
 		string[] blackKeyNames = new string[] { "C#", "D#", "F#", "G#", "A#" };
 
-		void CreatePianoKeys ()
+		List<SKNode> pianoNoteNodes = new List<SKNode>();
+		List<SKNode> whiteNotes = new List<SKNode>();
+		List<SKNode> blackNotes = new List<SKNode>();
+
+		NoteShape GetShapeForNote (int note)
 		{
+			switch (note % 12)
+			{
+				case 0: // C
+					return NoteShape.LShape;
+				case 1: // C#
+					return NoteShape.BlackNote;
+				case 2: // D
+					return NoteShape.MidNote;
+				case 3: // D#
+					return NoteShape.BlackNote;
+				case 4: // E
+					return NoteShape.ReverseLShape;
+				case 5: // F
+					return NoteShape.LShape;
+				case 6: // F#
+					return NoteShape.BlackNote;
+				case 7: // G
+					return NoteShape.MidNote;
+				case 8: // G#
+					return NoteShape.BlackNote;
+				case 9: // A
+					return NoteShape.MidNote;
+				case 10: // A#
+					return NoteShape.BlackNote;
+				case 11: // B
+					return NoteShape.ReverseLShape;
+				default:
+					throw new ApplicationException ("There shouldn't be a note with this value");
+			}
+		}
+
+		static List<string> allNoteNames = new List<string> {
+			"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"	
+		};
+
+		string GetMusicalNameForNote(int note)
+		{
+			var noteName = allNoteNames [note % 12];
+			var octave = note / 12;
+
+			return string.Format ("{0}{1}", noteName, octave);
+		}
+
+		int GetMidiNoteForName(string name)
+		{
+			string note = name.Substring (0, name.Length - 1);
+			int octave = Convert.ToInt32 (name.Substring (name.Length - 1, 1));
+			return octave * 12 + allNoteNames.IndexOf (note);
+		}
+
+		void CreatePianoKeys (int startingNote, int whiteNotesPerPage)
+		{
+			RemoveChildren (pianoNoteNodes.ToArray ());
+			pianoNoteNodes.Clear ();
+			blackNotes.Clear ();
+			whiteNotes.Clear ();
+
 			totalWidth = this.Frame.Width;
 			totalHeight = this.Frame.Height;
 
-			keyWidth = totalWidth / TouchInstruments.Core.PianoDetails.WhiteKeyCount;
+			keyWidth = totalWidth / whiteNotesPerPage;
 
-			// Add the White Keys
-
-
-			for (int i=0; i < TouchInstruments.Core.PianoDetails.WhiteKeyCount; i++)
+			int pos = 0;
+			double currentX = 0;
+			while (currentX <= whiteNotesPerPage)
 			{
-				var note = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), new CGSize (keyWidth, totalHeight)));
-				note.Position = new CGPoint(i * keyWidth, 0);
-				note.FillColor = UIColor.White;
-				note.StrokeColor = UIColor.LightGray;
-				note.Name = whiteKeyNames [i];
+				var note = startingNote + pos;
+				var noteName = GetMusicalNameForNote (note);
+				NoteShape shape = GetShapeForNote (note);
+				Console.WriteLine (noteName + ": " + shape);
 
-				AddChild (note);
+				// Add the note
+				SKShapeNode noteNode = null;
+				switch (shape)
+				{
+					case NoteShape.LShape:
+						noteNode = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), new CGSize (keyWidth, totalHeight)));
+						noteNode.Position = new CGPoint(currentX * keyWidth, 0);
+						noteNode.FillColor = UIColor.White;
+						noteNode.StrokeColor = UIColor.LightGray;
+						break;
+					case NoteShape.BlackNote:
+						noteNode = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), new CGSize (keyWidth / 2, totalHeight / 2)));
+						noteNode.Position = new CGPoint (currentX * keyWidth - keyWidth / 2 + keyWidth / 4, totalHeight / 2);
+						noteNode.FillColor = UIColor.Black;
+						noteNode.StrokeColor = UIColor.DarkGray;
+						break;
+					case NoteShape.MidNote:
+						noteNode = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), new CGSize (keyWidth, totalHeight)));
+						noteNode.Position = new CGPoint(currentX * keyWidth, 0);
+						noteNode.FillColor = UIColor.White;
+						noteNode.StrokeColor = UIColor.LightGray;
+						break;
+					case NoteShape.ReverseLShape:
+						noteNode = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), new CGSize (keyWidth, totalHeight)));
+						noteNode.Position = new CGPoint(currentX * keyWidth, 0);
+						noteNode.FillColor = UIColor.White;
+						noteNode.StrokeColor = UIColor.LightGray;
+						break;
+				}
+				noteNode.Name = GetMusicalNameForNote (note);
+
+				pianoNoteNodes.Add (noteNode);
+
+				if (shape != NoteShape.BlackNote) {
+					currentX++;
+					whiteNotes.Add (noteNode);
+				} else {
+					blackNotes.Add (noteNode);
+				}
+
+				pos++;
 			}
 
-			// Add the Black Keys
-			for (int i=0; i < placements.Length; i++)
-			{
-				var note = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), new CGSize (keyWidth / 2, totalHeight / 2)));
-				note.Position = new CGPoint (placements [i] * keyWidth + keyWidth / 2 + keyWidth / 4, totalHeight / 2);
-				note.FillColor = UIColor.Black;
-				note.StrokeColor = UIColor.DarkGray;
-				note.Name = blackKeyNames [i];
-
-				AddChild (note);
-			}
+			whiteNotes.ForEach (AddChild);
+			blackNotes.ForEach (AddChild);
 		}
 
 		void CreateOctaveKeys ()
@@ -85,14 +179,14 @@ namespace PianoTouch
 
 		void CreateInfoText ()
 		{
-			motionManagerNode = new SKLabelNode (defaultFontName) {
-				Text = "Piano",
-				FontSize = 17,
-				FontColor = UIColor.Black,
-				Position = new CGPoint (80, Frame.Height / 6)
-			};
-
-			AddChild (motionManagerNode);
+//			motionManagerNode = new SKLabelNode (defaultFontName) {
+//				Text = "Piano",
+//				FontSize = 17,
+//				FontColor = UIColor.Black,
+//				Position = new CGPoint (80, Frame.Height / 6)
+//			};
+//
+//			AddChild (motionManagerNode);
 		}
 
 		List<string> noteNames = new List<string>(
@@ -100,33 +194,16 @@ namespace PianoTouch
 
 		int currentLevel = 127;
 
-		void SetupAccelerometer ()
-		{
-			var motionManager = new CMMotionManager ();
-			motionManager.StartAccelerometerUpdates (NSOperationQueue.CurrentQueue, (data, error) => {
-				if (error == null)
-				{
-					// 1 is when the app is vertical
-					currentLevel = Convert.ToInt32(data.Acceleration.X / 2f * 256f);
-					Console.WriteLine (data.Acceleration.X);
-				}
-			});
-		}
-
 		public override void TouchesBegan (NSSet touches, UIEvent evt)
 		{
-			// Called when a touch begins
 			foreach (UITouch touch in touches) {
 				var location = touch.LocationInNode (this);
 				var node = GetNodesAtPoint (location)
-					.LastOrDefault (n => !String.IsNullOrEmpty (n.Name));
+					.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name));
 
 				if (node != null)
 				{
-					var baseTone = 5 * 12 - 2;
-
-					// Get the index
-					var index = noteNames.IndexOf (node.Name);
+					var index = GetMidiNoteForName (node.Name);
 					if (index >= 0)
 					{
 						// Get the pressure
@@ -134,16 +211,14 @@ namespace PianoTouch
 						if (touch.MaximumPossibleForce != 0)
 							amount = Convert.ToInt32 (touch.Force / touch.MaximumPossibleForce * 256);
 
-						GameViewController.MidiControl.PlayNote (baseTone + index, 1, amount);
+						GameViewController.MidiControl.PlayNote (index, 1, amount);
 
-						var clickedNote = node as SKShapeNode;
 						var note = SKShapeNode.FromRect (new CGRect(new CGPoint(0, 0), node.Frame.Size));
 						note.Position = node.Position;
 						note.FillColor = UIColor.Blue;
 						note.StrokeColor = UIColor.Blue;
 
 						note.RunAction (SKAction.Group (
-							//SKAction.ScaleBy (1.4f, 0.3f),
 							SKAction.FadeOutWithDuration (0.35f)
 						), () => RemoveChildren (new SKNode[] { note }));
 						

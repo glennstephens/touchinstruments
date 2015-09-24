@@ -18,6 +18,8 @@ namespace PianoTouch
 		{
 			base.ViewDidLoad ();
 
+			View.MultipleTouchEnabled = true;
+
 			// Configure the view.
 			var skView = (SKView)View;
 			skView.ShowsFPS = true;

@@ -54,6 +54,9 @@ namespace PianoTouch
 		{
 			// Called when the application is about to terminate. Save data, if needed. See also DidEnterBackground.
 		}
+
+		// Notes: Splash Screen taken from: https://pixabay.com/en/plan-piano-keys-show-music-songs-780569/
+
 	}
 }
 
