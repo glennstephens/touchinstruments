@@ -54,162 +54,7 @@ namespace TouchInstruments.Core
 				PresetID = (byte)preset,
 			});
 		}
-
-		public async Task PlayDynamicSong ()
-		{
-			var dur = 2000;
-
-			var t = 5 * 12 - 2;
-
-			var progression = new [] {
-				t,
-				t,
-				t,
-				t,
-				t + 5,
-				t + 5,
-				t,
-				t,
-				t + 7,
-				t + 5,
-				t,
-				t,
-			};
-			//
-			//			var progression = new [] {
-			//				t,
-			//				t + 5,
-			//				t + 7,
-			//				t + 7,
-			//				t,
-			//				t + 5,
-			//				t + 7,
-			//				t,
-			//			};
-
-			for (;;) {
-				foreach (var i in progression) {
-					await Task.WhenAll (
-						PlayMajor7ChordNotesChords (i, dur),
-						PlayMajor7ChordNotes (i, dur/8));
-
-					//					await PlayMinor7ChordNotes (i, dur);
-
-					//					await Task.Delay (dur);
-				}
-			}
-		}
-
-		public async Task PlayMajor7ChordNotes (int tone, int duration, int velocity = 127)
-		{
-			await PlayNote (tone, duration, velocity*0.6);
-			await PlayNote (tone+4, duration, velocity*0.65);
-			await PlayNote (tone+7, duration, velocity*0.7);
-			await PlayNote (tone+11, duration, velocity*0.75);
-			await PlayNote (tone+12, duration, velocity * 0.8);
-			await PlayNote (tone+11, duration, velocity*0.85);
-			await PlayNote (tone+7, duration, velocity*0.9);
-			await PlayNote (tone+4, duration, velocity*0.7);
-		}
-
-		public async Task PlayMajor7DimChordNotes (int tone, int duration, int velocity = 127)
-		{
-			await PlayNote (tone, duration, velocity*0.6);
-			await PlayNote (tone+4, duration, velocity*0.65);
-			await PlayNote (tone+7, duration, velocity*0.7);
-			await PlayNote (tone+10, duration, velocity*0.75);
-			await PlayNote (tone+12, duration, velocity * 0.8);
-			await PlayNote (tone+10, duration, velocity*0.85);
-			await PlayNote (tone+7, duration, velocity*0.9);
-			await PlayNote (tone+4, duration, velocity*0.7);
-		}
-
-		public async Task PlayMajor7ChordNotesChords (int tone, int duration, int velocity = 127)
-		{
-			await PlayMajorChord (tone, duration/4, velocity*0.8);
-			await PlayMajor7Chord (tone, duration*3/4, velocity*0.6);
-			//			await PlayMajor7Chord (tone, duration, velocity*0.6);
-			//			await PlayMajor7Chord (tone, duration, velocity*0.6);
-		}
-
-		public async Task PlayMinor7ChordNotes (int tone, int duration, int velocity = 127)
-		{
-			await PlayNote (tone, duration, velocity*0.6);
-			await PlayNote (tone+3, duration, velocity*0.7);
-			await PlayNote (tone+7, duration, velocity*0.8);
-			await PlayNote (tone+10, duration, velocity*0.9);
-			await PlayNote (tone+12, duration, velocity);
-			await PlayNote (tone+10, duration, velocity*0.9);
-			await PlayNote (tone+7, duration, velocity*0.8);
-			await PlayNote (tone+3, duration, velocity*0.7);
-		}
-
-		public async Task PlayMajorChord (int tone, int duration, double velocity = 127)
-		{
-			await PlayNotes (new [] {
-				tone,
-				tone + 4,
-				tone + 7,
-			}, duration, velocity);
-		}
-
-		public async Task PlayMajor7Chord (int tone, int duration, double velocity = 127)
-		{
-			await PlayNotes (new [] {
-				tone,
-				tone + 4,
-				tone + 7,
-				tone + 10,
-			}, duration, velocity);
-		}
-
-		public async Task PlayMinorChord (int tone, int duration, double velocity = 127)
-		{
-			await PlayNotes (new [] {
-				tone,
-				tone + 3,
-				tone + 7,
-			}, duration, velocity);
-		}
-
-		public async Task PlayMinor7Chord (int tone, int duration, int velocity = 127)
-		{
-			await PlayNotes (new [] {
-				tone,
-				tone + 3,
-				tone + 7,
-				tone + 10,
-			}, duration, velocity);
-		}
-
-		public async Task PlayMajorScale (int tone, int duration, int velocity = 127)
-		{
-			await PlayNotes (new [] {
-				tone,           // I
-				//				tone + 2,       // II
-				tone + 4,       // III
-				//				tone + 5,       // IV
-				tone + 7,       // V
-				//				tone + 9,       // VI
-				tone + 11,      // VII
-				tone + 12,
-			}, duration, velocity);
-		}
-
-		public async Task PlayMinorScale (int tone, int duration, int velocity = 127)
-		{
-			await PlayNotes (new [] {
-				tone,
-				//				tone + 2,
-				tone + 3,
-				//				tone + 5,
-				tone + 7,
-				//				tone + 8,
-				//				tone + 10,
-				//				tone + 12,
-			}, duration, velocity);
-		}
-
+			
 		public async Task PlayNotes (int[] notes, int duration, double velocity = 127)
 		{
 			await Task.WhenAll (notes.Select (x => PlayNote (x, duration, velocity)).ToArray ());
@@ -223,28 +68,41 @@ namespace TouchInstruments.Core
 			await Task.Delay (duration);
 		}
 
+		// A lot of good information on MIDI available from:
+		// http://www.music-software-development.com/midi-tutorial.html
+
+		const byte Velocity_pppp = 8;
+		const byte Velocity_ppp = 20;
+		const byte Velocity_pp = 31;
+		const byte Velocity_p = 42;
+		const byte Velocity_mp = 53;
+		const byte Velocity_mf = 64;
+		const byte Velocity_f = 80;
+		const byte Velocity_ff = 96;
+		const byte Velocity_fff = 112;
+		const byte Velocity_ffff = 127;
+
+		const byte MidiAction_NoteOn = 9; // 1001 = 9
+		const byte MidiAction_NoteOff = 8; // 1000 = 8 
+		const byte MidiAction_ControlTypeAllSoundOff = 0x78;
+		const byte MidiAction_ChangeVolume = 12;
+
+		public void NoteOn (int note, double velocity = Velocity_mf)
+		{
+			byte channel = 0;
+			var status = (MidiAction_NoteOn << 4) | channel;
+			var auStatus = samplerUnit.MusicDeviceMIDIEvent ((byte)status, (byte)note, (byte)velocity);
+		}
+
+		public void NoteOff(int note)
+		{
+			byte channel = 0;
+			var status = (MidiAction_ControlTypeAllSoundOff << 4) | channel;
+			samplerUnit.MusicDeviceMIDIEvent ((byte)status, (byte)note, (byte)0);
+		}
+
 		MidiClient midiClient;
 		MusicPlayer player;
-
-		void PlayMidiSong ()
-		{
-			var midiPath = NSBundle.MainBundle.PathForResource ("get_lucky", "mid");
-
-			midiClient = new MidiClient ("Midi Client");
-
-			MidiError stat;
-			var midiEndpoint = midiClient.CreateVirtualDestination ("VEnd", out stat);
-			midiEndpoint.MessageReceived += (sender, e) => HandleMidiPackets(e.Packets);
-
-			var s = new MusicSequence ();
-			s.LoadFile (NSUrl.FromFilename (midiPath), MusicSequenceFileTypeID.Midi);
-			s.SetMidiEndpoint (midiEndpoint);
-
-			player = new MusicPlayer ();
-
-			player.MusicSequence = s;
-			player.Start ();
-		}
 
 		unsafe void HandleMidiPackets (MidiPacket[] packets)
 		{

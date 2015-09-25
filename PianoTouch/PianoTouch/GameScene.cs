@@ -194,6 +194,10 @@ namespace PianoTouch
 
 		int currentLevel = 127;
 
+		MusicalTouches allTouches = 
+			new MusicalTouches(GameViewController.MidiControl, 
+				new ExonentialForceTouchStrategy());
+
 		public override void TouchesBegan (NSSet touches, UIEvent evt)
 		{
 			foreach (UITouch touch in touches) {
@@ -206,26 +210,72 @@ namespace PianoTouch
 					var index = GetMidiNoteForName (node.Name);
 					if (index >= 0)
 					{
-						// Get the pressure
-						int amount = 127;
-						if (touch.MaximumPossibleForce != 0)
-							amount = Convert.ToInt32 (touch.Force / touch.MaximumPossibleForce * 256);
+						var musicTouch = allTouches.StartNote (touch, index);
 
-						GameViewController.MidiControl.PlayNote (index, 1, amount);
+						PlayFadeOutNoteDisplay (node);
 
-						var note = SKShapeNode.FromRect (new CGRect(new CGPoint(0, 0), node.Frame.Size));
-						note.Position = node.Position;
-						note.FillColor = UIColor.Blue;
-						note.StrokeColor = UIColor.Blue;
-
-						note.RunAction (SKAction.Group (
-							SKAction.FadeOutWithDuration (0.35f)
-						), () => RemoveChildren (new SKNode[] { note }));
 						
-						AddChild (note);
 					}
 				}
 			}
+		}
+
+		public override void TouchesMoved (NSSet touches, UIEvent evt)
+		{
+			base.TouchesMoved (touches, evt);
+
+			foreach (UITouch touch in touches) {
+				var location = touch.LocationInNode (this);
+				var node = GetNodesAtPoint (location)
+					.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name));
+
+				if (node != null) {
+					var index = GetMidiNoteForName (node.Name);
+					if (index >= 0) {
+						var mn = allTouches.UpdateNote (touch, index);
+
+						if (mn.DidChangeVisuals)
+							PlayFadeOutNoteDisplay (node);
+					}
+				}
+			}
+		}
+
+		void PlayFadeOutNoteDisplay (SKNode node)
+		{
+			// Play the fade out note
+			var note = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), node.Frame.Size));
+			note.Position = node.Position;
+			note.FillColor = UIColor.Blue;
+			note.StrokeColor = UIColor.Blue;
+			note.RunAction (SKAction.Group (SKAction.FadeOutWithDuration (0.35f)), () => RemoveChildren (new SKNode[] {
+				note
+			}));
+
+			AddChild (note);
+		}
+
+		public override void TouchesEnded (NSSet touches, UIEvent evt)
+		{
+			base.TouchesEnded (touches, evt);
+
+			foreach (UITouch touch in touches) {
+				var location = touch.LocationInNode (this);
+				var node = GetNodesAtPoint (location)
+					.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name));
+
+				if (node != null) {
+					var index = GetMidiNoteForName (node.Name);
+					if (index >= 0) {
+						allTouches.EndNote (touch, index);
+					}
+				}
+			}
+		}
+
+		public override void TouchesCancelled (NSSet touches, UIEvent evt)
+		{
+			base.TouchesCancelled (touches, evt);
 		}
 
 		public override void Update (double currentTime)
