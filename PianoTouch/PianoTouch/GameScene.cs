@@ -27,7 +27,7 @@ namespace PianoTouch
 
 		public override void DidMoveToView (SKView view)
 		{
-			CreatePianoKeys (5 * 12 + 1, 8);
+			CreatePianoKeys (5 * 12, 8);
 
 			CreateOctaveKeys ();
 
@@ -213,8 +213,6 @@ namespace PianoTouch
 						var musicTouch = allTouches.StartNote (touch, index);
 
 						PlayFadeOutNoteDisplay (node);
-
-						
 					}
 				}
 			}

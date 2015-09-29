@@ -2,6 +2,7 @@ using System;
 using UIKit;
 using System.Collections.Generic;
 using TouchInstruments.Core;
+using System.Threading.Tasks;
 
 namespace PianoTouch
 {
@@ -35,11 +36,23 @@ namespace PianoTouch
 
 			// Play the midi note at that volume
 			//midi.PlayNote (note, 1, initialVolume);
-			midi.NoteOn (note, initialVolume);
 
+			if (volumeStrategy.UseInitialTouch) {
+				midi.NoteOn (note, initialVolume);
+			} else {
+				StartWaitingForLatencyTime (musicTouch, note, volumeStrategy.MillisecondsFromFirstTouch);
+			}
 			musicTouch.DidChangeVisuals = true;
 
 			return musicTouch;
+		}
+
+		async Task StartWaitingForLatencyTime(MusicalTouch touch, int note, int delayAmount)
+		{
+			await Task.Delay (delayAmount);
+
+			midi.NoteOn (note, touch.CalculatedVolume);
+			touch.DidChangeVisuals = true;
 		}
 
 		public MusicalTouch UpdateNote(UITouch touch, int note)
@@ -52,28 +65,40 @@ namespace PianoTouch
 			// Get the volume for the current touch
 			var newVolume = volumeStrategy.TouchesDown (touch);
 
-			// See if the musical note is different
+				// See if the musical note is different
 			if (note != currentNote.Note) {
 				// We need to change the note and the volume
-				midi.NoteOff (currentNote.Note);
 
-				// Start Playing the next note
-				midi.NoteOn (note, newVolume);
-
-				currentNote.Note = note;
-				currentNote.Volume = newVolume;
-				currentNote.DidChangeVisuals = true;
-			} else {
-				if (newVolume != currentNote.Volume)
-				{
-					// Update the note and play the new volume
+				if (volumeStrategy.UseInitialTouch) {
 					midi.NoteOff (currentNote.Note);
 
 					// Start Playing the next note
 					midi.NoteOn (note, newVolume);
+				}
+				currentNote.Note = note;
+
+				if (volumeStrategy.UseInitialTouch)
+					currentNote.Volume = newVolume;
+				else
+					currentNote.AddVolume (newVolume);
+
+				currentNote.DidChangeVisuals = true;
+			} else {
+				if (newVolume != currentNote.Volume) {
+					// Update the note and play the new volume
+					if (volumeStrategy.UseInitialTouch) {
+						midi.NoteOff (currentNote.Note);
+
+						// Start Playing the next note
+						midi.NoteOn (note, newVolume);
+					}
 
 					currentNote.Note = note;
-					currentNote.Volume = newVolume;
+
+					if (volumeStrategy.UseInitialTouch)
+						currentNote.Volume = newVolume;
+					else
+						currentNote.AddVolume (newVolume);
 				} 
 
 				currentNote.DidChangeVisuals = false;

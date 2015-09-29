@@ -11,6 +11,9 @@ namespace PianoTouch
 		public abstract int TouchesDown (UITouch touch);
 		public abstract int TouchesMove (UITouch touch);
 		public abstract int TouchesUp (UITouch touch);
+
+		public abstract bool UseInitialTouch { get; }
+		public abstract int MillisecondsFromFirstTouch { get; }
 	}
 
 	public class ConstantVolumeTouchStrategy : BaseTouchStrategy 
@@ -35,6 +38,18 @@ namespace PianoTouch
 		public override int TouchesUp (UITouch touch)
 		{
 			return constantVolume;
+		}
+
+		public override bool UseInitialTouch {
+			get {
+				return true;
+			}
+		}
+
+		public override int MillisecondsFromFirstTouch {
+			get {
+				return 0;
+			}
 		}
 	}
 
@@ -62,6 +77,19 @@ namespace PianoTouch
 		{
 			return PressureForTouch(touch);
 		}
+
+		public override bool UseInitialTouch {
+			get {
+				return false;
+			}
+		}
+
+		// Defines the latency for the system
+		public override int MillisecondsFromFirstTouch {
+			get {
+				return 100;
+			}
+		}
 	}
 
 	public class ExonentialForceTouchStrategy : ForcePercentageTouchStrategy
@@ -75,7 +103,7 @@ namespace PianoTouch
 			var percentage = touch.Force / touch.MaximumPossibleForce * 4;	
 
 			// We need an exponential value between 1 and 127
-			var volume = 64.0 * Math.Pow (Math.E, percentage);
+			var volume = 52.0 * Math.Pow (Math.E, percentage);
 			if (volume > 127)
 				volume = 127;
 
