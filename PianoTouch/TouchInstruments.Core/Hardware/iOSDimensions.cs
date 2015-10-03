@@ -91,12 +91,13 @@ namespace TouchInstruments.Core
 
 		public double InchesToPixels(double inches)
 		{
-			return inches / pixelsToInchesRatio;
+			return inches * pixelsToInchesRatio;
 		}
 
 		public double MillimetersToPixels(double mms)
 		{
-			return InchesToPixels (mms * 25.4);
+			var amountInInches = mms * 0.0393700787;
+			return InchesToPixels (amountInInches);
 		}
 	}
 
@@ -107,5 +108,37 @@ namespace TouchInstruments.Core
 		public static PhoneSize iPhone5Sizes = new PhoneSize(320, 568, 4.0);
 		public static PhoneSize iPhone6Sizes = new PhoneSize(375, 667, 4.7);
 		public static PhoneSize iPhone6PlusSizes = new PhoneSize(414, 736, 5.5);
+
+		public static PhoneSize GetCurrentDevice()
+		{
+			var model = iOSHardware.GetActualModel (iOSHardware.GetModel ());
+
+			switch (model)
+			{
+				case "iPhone":
+				case "iPod touch":
+				case "iPod touch 2G":
+				case "iPhone 3G":
+				case "iPod touch 3G":
+				case "iPhone 4 GSM":
+				case "iPhone 4 CDMA":
+				case "iPhone 4S":
+				case "iPod touch 4G":
+					return iPhone1to4Sizes;
+				case "iPhone 5C GSM":
+				case "iPhone 5C Global":
+				case "iPhone 5S GSM":
+				case "iPhone 5S Global":
+				case "iPod touch 5G":
+				case "iPod touch 6G":
+					return iPhone5Sizes;
+				case "iPhone 6":
+					return iPhone6Sizes;
+				case "iPhone 6 Plus":
+					return iPhone6PlusSizes;
+				default:
+					return iPhone6Sizes;
+			}
+		}
 	}
 }

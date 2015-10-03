@@ -72,10 +72,6 @@
     <CodesignKey>iPhone Developer: Glenn Stephens (2HW3RSM87D)</CodesignKey>
     <MtouchDebug>true</MtouchDebug>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <CodesignProvision>a02b9139-0136-4db8-bd81-5e23c3f7b9a4</CodesignProvision>
-    <MtouchUseRefCounting>true</MtouchUseRefCounting>
-    <MtouchI18n>
-    </MtouchI18n>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -109,10 +105,10 @@
     <BundleResource Include="Resources\SoundFonts\Warm_Lead_MDX7.sf2" />
     <BundleResource Include="Resources\SoundFonts\Zed_Bass_2PM.sf2" />
     <BundleResource Include="Resources\SoundFonts\Zero_Lead_MDX7.sf2" />
-    <BundleResource Include="Resources\pianoimg.jpg" />
+    <BundleResource Include="Resources\piano.png" />
+    <BundleResource Include="Resources\piano%402x.png" />
   </ItemGroup>
   <ItemGroup>
-    <InterfaceDefinition Include="Resources\LaunchScreen.xib" />
     <InterfaceDefinition Include="Main.storyboard" />
     <InterfaceDefinition Include="MainSplashScreenDisplay.storyboard" />
   </ItemGroup>

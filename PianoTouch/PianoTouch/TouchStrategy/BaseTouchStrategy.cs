@@ -3,6 +3,7 @@ using UIKit;
 using System.Collections.Generic;
 using PianoTouch;
 using CoreImage;
+using System.Collections.Specialized;
 
 namespace PianoTouch
 {
@@ -108,6 +109,49 @@ namespace PianoTouch
 				volume = 127;
 
 			return Convert.ToInt32 (volume);
+		}
+	}
+
+	public class OSVersionCheckStrategy : BaseTouchStrategy
+	{
+		ExonentialForceTouchStrategy force = new ExonentialForceTouchStrategy ();
+		ConstantVolumeTouchStrategy constant = new ConstantVolumeTouchStrategy (64);
+
+		BaseTouchStrategy strategy;
+
+		public OSVersionCheckStrategy() : base()
+		{
+			if (UIDevice.CurrentDevice.CheckSystemVersion (9, 0)) {
+				strategy = force;
+			} else
+				strategy = constant;
+		}
+
+		public override int TouchesDown (UITouch touch)
+		{
+			return strategy.TouchesDown (touch);
+		}
+
+		public override int TouchesMove (UITouch touch)
+		{
+			return strategy.TouchesMove (touch);
+		}
+
+		public override int TouchesUp (UITouch touch)
+		{
+			return strategy.TouchesUp (touch);
+		}
+
+		public override bool UseInitialTouch {
+			get {
+				return false;
+			}
+		}
+
+		public override int MillisecondsFromFirstTouch {
+			get {
+				return 75;
+			}
 		}
 	}
 }

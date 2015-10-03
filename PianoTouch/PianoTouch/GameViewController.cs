@@ -10,6 +10,7 @@ namespace PianoTouch
 	{
 		public GameViewController (IntPtr handle) : base (handle)
 		{
+			
 		}
 
 		public static MidiControl MidiControl = new MidiControl();
@@ -24,6 +25,7 @@ namespace PianoTouch
 			var skView = (SKView)View;
 			skView.ShowsFPS = true;
 			skView.ShowsNodeCount = true;
+
 			/* Sprite Kit applies additional optimizations to improve rendering performance */
 			skView.IgnoresSiblingOrder = true;
 
@@ -33,8 +35,6 @@ namespace PianoTouch
 
 			// Present the scene.
 			skView.PresentScene (scene);
-
-			//control.PlayDynamicSong ();
 		}
 
 		public override bool ShouldAutorotate ()
@@ -45,12 +45,6 @@ namespace PianoTouch
 		public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations ()
 		{
 			return UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone ? UIInterfaceOrientationMask.AllButUpsideDown : UIInterfaceOrientationMask.All;
-		}
-
-		public override void DidReceiveMemoryWarning ()
-		{
-			base.DidReceiveMemoryWarning ();
-			// Release any cached data, images, etc that aren't in use.
 		}
 
 		public override bool PrefersStatusBarHidden ()

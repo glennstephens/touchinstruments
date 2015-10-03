@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MediaPlayer;
 using CoreMotion;
+using TouchInstruments.Core;
 
 namespace PianoTouch
 {
@@ -100,17 +101,31 @@ namespace PianoTouch
 			return octave * 12 + allNoteNames.IndexOf (note);
 		}
 
-		void CreatePianoKeys (int startingNote, int whiteNotesPerPage)
+		int currentStartingNode;
+		int notesPerPage;
+
+		void CreatePianoKeys (int startingNote, int whiteNotesPerPage, bool useActualKeySize = false)
 		{
+			currentStartingNode = startingNote;
+			notesPerPage = whiteNotesPerPage;
+
 			RemoveChildren (pianoNoteNodes.ToArray ());
 			pianoNoteNodes.Clear ();
 			blackNotes.Clear ();
 			whiteNotes.Clear ();
 
+			nfloat topOffset = 0;
+
 			totalWidth = this.Frame.Width;
 			totalHeight = this.Frame.Height;
 
-			keyWidth = totalWidth / whiteNotesPerPage;
+			if (!useActualKeySize)
+				keyWidth = totalWidth / whiteNotesPerPage;
+			else {
+				// Get the actual size of the piano key in pixels based on the device
+				var size = TouchInstruments.Core.iOSDimensions.GetCurrentDevice ();
+				keyWidth = size.MillimetersToPixels (PianoDetails.WhiteKeyWidthInMMs);
+			}
 
 			int pos = 0;
 			double currentX = 0;
@@ -127,25 +142,29 @@ namespace PianoTouch
 				{
 					case NoteShape.LShape:
 						noteNode = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), new CGSize (keyWidth, totalHeight)));
-						noteNode.Position = new CGPoint(currentX * keyWidth, 0);
+						noteNode.Position = new CGPoint(currentX * keyWidth, topOffset);
 						noteNode.FillColor = UIColor.White;
 						noteNode.StrokeColor = UIColor.LightGray;
 						break;
 					case NoteShape.BlackNote:
-						noteNode = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), new CGSize (keyWidth / 2, totalHeight / 2)));
-						noteNode.Position = new CGPoint (currentX * keyWidth - keyWidth / 2 + keyWidth / 4, totalHeight / 2);
+						noteNode = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), 
+							new CGSize (keyWidth / 2, totalHeight / 2)));
+
+						noteNode.Position = new CGPoint (currentX * keyWidth - keyWidth / 2 + keyWidth / 4, 
+							topOffset + totalHeight / 2);
+
 						noteNode.FillColor = UIColor.Black;
 						noteNode.StrokeColor = UIColor.DarkGray;
 						break;
 					case NoteShape.MidNote:
 						noteNode = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), new CGSize (keyWidth, totalHeight)));
-						noteNode.Position = new CGPoint(currentX * keyWidth, 0);
+						noteNode.Position = new CGPoint(currentX * keyWidth, topOffset);
 						noteNode.FillColor = UIColor.White;
 						noteNode.StrokeColor = UIColor.LightGray;
 						break;
 					case NoteShape.ReverseLShape:
 						noteNode = SKShapeNode.FromRect (new CGRect (new CGPoint (0, 0), new CGSize (keyWidth, totalHeight)));
-						noteNode.Position = new CGPoint(currentX * keyWidth, 0);
+						noteNode.Position = new CGPoint(currentX * keyWidth, topOffset);
 						noteNode.FillColor = UIColor.White;
 						noteNode.StrokeColor = UIColor.LightGray;
 						break;
@@ -168,9 +187,43 @@ namespace PianoTouch
 			blackNotes.ForEach (AddChild);
 		}
 
+		void CreateButtonAtPoint(string name, string buttonText, CGSize size, CGPoint viewPoint)
+		{
+			var buttonBackground = SKShapeNode.FromRect (size);
+			buttonBackground.FillColor = UIColor.FromRGB (222, 222, 222);
+			buttonBackground.StrokeColor = UIColor.FromRGB (211, 211, 211);
+			buttonBackground.Position = Scene.ConvertPointFromView (viewPoint);
+			buttonBackground.Name = name;
+
+			AddChild (buttonBackground);
+
+			var buttonTextNode = new SKLabelNode (defaultFontName) {
+				Text = buttonText,
+				FontSize = 33,
+				FontColor = UIColor.Black,
+			};
+
+			CGPoint newPoint = new CGPoint (viewPoint.X, viewPoint.Y + 8);
+			buttonTextNode.Position = Scene.ConvertPointFromView (newPoint);
+
+			AddChild (buttonTextNode);
+		}
+
 		void CreateOctaveKeys ()
 		{
-			
+//			// Get the rectangle
+//			var barTopLeft = this.Scene.ConvertPointFromView (new CGPoint(0, 0));
+//			var barBottomRight = this.Scene.ConvertPointFromView (new CGPoint(UIScreen.MainScreen.Bounds.Width, 40));
+//
+//			var mainToolbarBackground = SKShapeNode.FromRect (
+//				new CGRect(barTopLeft.X, barTopLeft.Y, barBottomRight.X - barTopLeft.X, barBottomRight.Y - barTopLeft.Y));
+//			mainToolbarBackground.FillColor = UIColor.FromRGB (222, 222, 222);
+//			mainToolbarBackground.StrokeColor = UIColor.FromRGB (211, 211, 211);
+
+			CreateButtonAtPoint ("Control-7", "-7", new CGSize (80, 80), new CGPoint (40, 24));
+			CreateButtonAtPoint ("Control-1", "-1", new CGSize (80, 80), new CGPoint (85, 24));
+			CreateButtonAtPoint ("Control+1", "+1", new CGSize (80, 80), new CGPoint (130, 24));
+			CreateButtonAtPoint ("Control+7", "+7", new CGSize (80, 80), new CGPoint (175, 24));
 		}
 
 		string defaultFontName = "Avenir-Light";
@@ -196,14 +249,50 @@ namespace PianoTouch
 
 		MusicalTouches allTouches = 
 			new MusicalTouches(GameViewController.MidiControl, 
-				new ExonentialForceTouchStrategy());
+				new OSVersionCheckStrategy());
+
+		SKNode GetMusicalNodeAtLocation (CGPoint location)
+		{
+			var allNodes = GetNodesAtPoint (location)
+				.Where (n => !String.IsNullOrEmpty (n.Name));
+			var blackNode = allNodes.FirstOrDefault (n => n.Name.Contains ("#"));
+			if (blackNode != null)
+				return blackNode;
+			else
+				return allNodes.FirstOrDefault (n => !n.Name.Contains ("#"));
+		}
+
+		bool LookForControlMessage (CGPoint location)
+		{
+			var controlNode = GetNodesAtPoint (location)
+				.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name) && n.Name.StartsWith ("Control"));
+
+			if (controlNode != null)
+			{
+				var amount = Convert.ToInt32 (controlNode.Name.Substring (7));
+
+				// Recreate the display
+				var newPosition = currentStartingNode + amount;
+
+				CreatePianoKeys (newPosition, notesPerPage);
+
+				return true;
+			}
+
+			return false;
+		}
 
 		public override void TouchesBegan (NSSet touches, UIEvent evt)
 		{
 			foreach (UITouch touch in touches) {
-				var location = touch.LocationInNode (this);
-				var node = GetNodesAtPoint (location)
-					.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name));
+
+				// Check For a Control Message
+				var loc = touch.LocationInNode (this);
+				var didProcessControlMessage = LookForControlMessage (loc);
+				if (didProcessControlMessage)
+					continue;
+
+				var node = GetMusicalNodeAtLocation (loc);
 
 				if (node != null)
 				{
@@ -211,7 +300,6 @@ namespace PianoTouch
 					if (index >= 0)
 					{
 						var musicTouch = allTouches.StartNote (touch, index);
-
 						PlayFadeOutNoteDisplay (node);
 					}
 				}
@@ -223,9 +311,13 @@ namespace PianoTouch
 			base.TouchesMoved (touches, evt);
 
 			foreach (UITouch touch in touches) {
-				var location = touch.LocationInNode (this);
-				var node = GetNodesAtPoint (location)
-					.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name));
+				var loc = touch.LocationInNode (this);
+
+				var didProcessControlMessage = LookForControlMessage (loc);
+				if (didProcessControlMessage)
+					continue;
+				
+				var node = GetMusicalNodeAtLocation (loc);
 
 				if (node != null) {
 					var index = GetMidiNoteForName (node.Name);
@@ -258,9 +350,13 @@ namespace PianoTouch
 			base.TouchesEnded (touches, evt);
 
 			foreach (UITouch touch in touches) {
-				var location = touch.LocationInNode (this);
-				var node = GetNodesAtPoint (location)
-					.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name));
+				var loc = touch.LocationInNode (this);
+
+				var didProcessControlMessage = LookForControlMessage (loc);
+				if (didProcessControlMessage)
+					continue;
+				
+				var node = GetMusicalNodeAtLocation (touch.LocationInNode (this));
 
 				if (node != null) {
 					var index = GetMidiNoteForName (node.Name);
