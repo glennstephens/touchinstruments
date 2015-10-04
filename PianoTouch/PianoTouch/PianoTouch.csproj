@@ -26,6 +26,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CodesignProvision>a02b9139-0136-4db8-bd81-5e23c3f7b9a4</CodesignProvision>
     <CodesignKey>iPhone Developer</CodesignKey>
+    <MtouchUseRefCounting>true</MtouchUseRefCounting>
+    <MtouchI18n>
+    </MtouchI18n>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>full</DebugType>
@@ -38,7 +41,7 @@
     <ConsolePause>false</ConsolePause>
     <CodesignKey>iPhone Developer: Glenn Stephens (2HW3RSM87D)</CodesignKey>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <CodesignProvision>a02b9139-0136-4db8-bd81-5e23c3f7b9a4</CodesignProvision>
+    <CodesignProvision>2f820973-67cb-4ea0-aac8-99c6bd669195</CodesignProvision>
     <MtouchUseLlvm>true</MtouchUseLlvm>
     <MtouchUseSGen>true</MtouchUseSGen>
     <MtouchUseRefCounting>true</MtouchUseRefCounting>
@@ -69,9 +72,15 @@
     <MtouchArch>ARMv7, ARM64</MtouchArch>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchProfiling>true</MtouchProfiling>
-    <CodesignKey>iPhone Developer: Glenn Stephens (2HW3RSM87D)</CodesignKey>
+    <CodesignKey>iPhone Developer</CodesignKey>
     <MtouchDebug>true</MtouchDebug>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CodesignProvision>2f820973-67cb-4ea0-aac8-99c6bd669195</CodesignProvision>
+    <IpaPackageName>
+    </IpaPackageName>
+    <MtouchUseRefCounting>true</MtouchUseRefCounting>
+    <MtouchI18n>
+    </MtouchI18n>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -81,8 +90,21 @@
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json" />
-    <ImageAsset Include="Resources\Images.xcassets\Spaceship.imageset\Contents.json" />
-    <ImageAsset Include="Resources\Images.xcassets\Spaceship.imageset\Spaceship.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_29.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_58.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_87.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_80.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_120.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_57.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_114.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_180.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_40.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_50.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_100.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_72.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_76.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_152.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%403x_144.png" />
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\GameScene.sks" />
@@ -107,6 +129,7 @@
     <BundleResource Include="Resources\SoundFonts\Zero_Lead_MDX7.sf2" />
     <BundleResource Include="Resources\piano.png" />
     <BundleResource Include="Resources\piano%402x.png" />
+    <BundleResource Include="Resources\LaunchImage.png" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
@@ -138,5 +161,9 @@
       <Project>{44310946-41F9-46AE-8401-4A8444DD0B03}</Project>
       <Name>TouchInstruments.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ITunesArtwork Include="iTunesArtwork" />
+    <ITunesArtwork Include="iTunesArtwork%402x" />
   </ItemGroup>
 </Project>

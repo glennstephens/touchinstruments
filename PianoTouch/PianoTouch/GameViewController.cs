@@ -23,8 +23,8 @@ namespace PianoTouch
 
 			// Configure the view.
 			var skView = (SKView)View;
-			skView.ShowsFPS = true;
-			skView.ShowsNodeCount = true;
+			skView.ShowsFPS = false;
+			skView.ShowsNodeCount = false;
 
 			/* Sprite Kit applies additional optimizations to improve rendering performance */
 			skView.IgnoresSiblingOrder = true;

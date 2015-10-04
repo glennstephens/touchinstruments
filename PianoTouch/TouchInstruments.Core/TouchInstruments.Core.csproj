@@ -47,6 +47,7 @@
     <Compile Include="InstrumentDetails\PianoDetails.cs" />
     <Compile Include="Hardware\iOSHardware.cs" />
     <Compile Include="Hardware\iOSDimensions.cs" />
+    <Compile Include="AvailableSoundFonts.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>

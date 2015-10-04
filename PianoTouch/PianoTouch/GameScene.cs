@@ -9,6 +9,7 @@ using System.Linq;
 using MediaPlayer;
 using CoreMotion;
 using TouchInstruments.Core;
+using System.Runtime.InteropServices;
 
 namespace PianoTouch
 {
@@ -106,6 +107,12 @@ namespace PianoTouch
 
 		void CreatePianoKeys (int startingNote, int whiteNotesPerPage, bool useActualKeySize = false)
 		{
+			if (startingNote < 1)
+				startingNote = 1;
+
+			if (startingNote > 88 + 5 - whiteNotesPerPage)
+				startingNote = 88 + 5 - whiteNotesPerPage;
+			
 			currentStartingNode = startingNote;
 			notesPerPage = whiteNotesPerPage;
 
@@ -185,7 +192,11 @@ namespace PianoTouch
 
 			whiteNotes.ForEach (AddChild);
 			blackNotes.ForEach (AddChild);
+
+			UpdateButtonControls ();
 		}
+
+		List<SKNode> buttonControls = new List<SKNode>();
 
 		void CreateButtonAtPoint(string name, string buttonText, CGSize size, CGPoint viewPoint)
 		{
@@ -196,6 +207,7 @@ namespace PianoTouch
 			buttonBackground.Name = name;
 
 			AddChild (buttonBackground);
+			buttonControls.Add (buttonBackground);
 
 			var buttonTextNode = new SKLabelNode (defaultFontName) {
 				Text = buttonText,
@@ -207,6 +219,7 @@ namespace PianoTouch
 			buttonTextNode.Position = Scene.ConvertPointFromView (newPoint);
 
 			AddChild (buttonTextNode);
+			buttonControls.Add (buttonTextNode);
 		}
 
 		void CreateOctaveKeys ()
@@ -220,15 +233,31 @@ namespace PianoTouch
 //			mainToolbarBackground.FillColor = UIColor.FromRGB (222, 222, 222);
 //			mainToolbarBackground.StrokeColor = UIColor.FromRGB (211, 211, 211);
 
-			CreateButtonAtPoint ("Control-7", "-7", new CGSize (80, 80), new CGPoint (40, 24));
-			CreateButtonAtPoint ("Control-1", "-1", new CGSize (80, 80), new CGPoint (85, 24));
-			CreateButtonAtPoint ("Control+1", "+1", new CGSize (80, 80), new CGPoint (130, 24));
-			CreateButtonAtPoint ("Control+7", "+7", new CGSize (80, 80), new CGPoint (175, 24));
+			// From: http://www.amp-what.com/unicode/search//note%7Cmusic/
+			char noteDisplay = '♩';
+			char octaveDownArrow = '⇇';
+			char octaveUpArrow = '⇉';
+			char noteDownArrow = '←';
+			char noteUpArrow = '→';
+			string pianoIcon = "🎹";
+			char gear = '⚙';
+
+			CreateButtonAtPoint ("Control-7", "" + octaveDownArrow + noteDisplay, new CGSize (80, 80), new CGPoint (40, 24));
+			CreateButtonAtPoint ("Control-1", "" + noteDownArrow + noteDisplay, new CGSize (80, 80), new CGPoint (85, 24));
+			CreateButtonAtPoint ("Control+1", "" + noteUpArrow + noteDisplay, new CGSize (80, 80), new CGPoint (130, 24));
+			CreateButtonAtPoint ("Control+7", "" + octaveUpArrow + noteDisplay, new CGSize (80, 80), new CGPoint (175, 24));
+
+			CreateButtonAtPoint ("Settings", "" + pianoIcon + octaveUpArrow, 
+				new CGSize (120, 80), new CGPoint (this.Scene.View.Frame.Width - 60, 24));
+		}
+
+		void UpdateButtonControls()
+		{
+			RemoveChildren(buttonControls.ToArray());
+			buttonControls.ForEach (n => AddChild (n));
 		}
 
 		string defaultFontName = "Avenir-Light";
-
-		SKLabelNode motionManagerNode;
 
 		void CreateInfoText ()
 		{
@@ -241,11 +270,6 @@ namespace PianoTouch
 //
 //			AddChild (motionManagerNode);
 		}
-
-		List<string> noteNames = new List<string>(
-			new string[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"});
-
-		int currentLevel = 127;
 
 		MusicalTouches allTouches = 
 			new MusicalTouches(GameViewController.MidiControl, 
@@ -262,21 +286,53 @@ namespace PianoTouch
 				return allNodes.FirstOrDefault (n => !n.Name.Contains ("#"));
 		}
 
-		bool LookForControlMessage (CGPoint location)
+		bool LookForControlMessage (CGPoint location, bool process = true)
 		{
 			var controlNode = GetNodesAtPoint (location)
 				.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name) && n.Name.StartsWith ("Control"));
 
+			if (process == false)
+				return controlNode != null;
+			
 			if (controlNode != null)
 			{
 				var amount = Convert.ToInt32 (controlNode.Name.Substring (7));
+				var newPosition = currentStartingNode;
 
-				// Recreate the display
-				var newPosition = currentStartingNode + amount;
+				switch (amount)
+				{
+					case -7: 
+						newPosition -= 12;
+						break;
+					case 7: 
+						newPosition += 12;
+						break;
+					case 1:
+						newPosition++;
+						if (GetShapeForNote (newPosition) == NoteShape.BlackNote)
+							newPosition++;
+						break;
+					case -1:
+						newPosition--;
+						if (GetShapeForNote (newPosition) == NoteShape.BlackNote)
+							newPosition--;
+						break;
+				}
 
 				CreatePianoKeys (newPosition, notesPerPage);
 
 				return true;
+			}
+
+			// Check for the Settings
+			var settingsNode = GetNodesAtPoint (location)
+				.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name) && n.Name == "Settings");
+
+			if (settingsNode != null)
+			{
+				// Change the instrument
+
+
 			}
 
 			return false;
@@ -312,11 +368,10 @@ namespace PianoTouch
 
 			foreach (UITouch touch in touches) {
 				var loc = touch.LocationInNode (this);
-
-				var didProcessControlMessage = LookForControlMessage (loc);
+				var didProcessControlMessage = LookForControlMessage (loc, false);
 				if (didProcessControlMessage)
 					continue;
-				
+
 				var node = GetMusicalNodeAtLocation (loc);
 
 				if (node != null) {
@@ -352,7 +407,7 @@ namespace PianoTouch
 			foreach (UITouch touch in touches) {
 				var loc = touch.LocationInNode (this);
 
-				var didProcessControlMessage = LookForControlMessage (loc);
+				var didProcessControlMessage = LookForControlMessage (loc, false);
 				if (didProcessControlMessage)
 					continue;
 				
