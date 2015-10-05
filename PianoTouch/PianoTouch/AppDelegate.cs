@@ -18,7 +18,6 @@ namespace PianoTouch
 		{
 			var model = iOSHardware.GetModel ();
 
-
 			var iP5 = iOSDimensions.iPhone5Sizes;
 
 			return true;

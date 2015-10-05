@@ -10,6 +10,7 @@ using MediaPlayer;
 using CoreMotion;
 using TouchInstruments.Core;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace PianoTouch
 {
@@ -222,6 +223,15 @@ namespace PianoTouch
 			buttonControls.Add (buttonTextNode);
 		}
 
+		// From: http://www.amp-what.com/unicode/search//note%7Cmusic/
+		char noteDisplay = '♩';
+		char octaveDownArrow = '⇇';
+		char octaveUpArrow = '⇉';
+		char noteDownArrow = '←';
+		char noteUpArrow = '→';
+		string pianoIcon = "🎹";
+		char gear = '⚙';
+
 		void CreateOctaveKeys ()
 		{
 //			// Get the rectangle
@@ -233,21 +243,14 @@ namespace PianoTouch
 //			mainToolbarBackground.FillColor = UIColor.FromRGB (222, 222, 222);
 //			mainToolbarBackground.StrokeColor = UIColor.FromRGB (211, 211, 211);
 
-			// From: http://www.amp-what.com/unicode/search//note%7Cmusic/
-			char noteDisplay = '♩';
-			char octaveDownArrow = '⇇';
-			char octaveUpArrow = '⇉';
-			char noteDownArrow = '←';
-			char noteUpArrow = '→';
-			string pianoIcon = "🎹";
-			char gear = '⚙';
-
 			CreateButtonAtPoint ("Control-7", "" + octaveDownArrow + noteDisplay, new CGSize (80, 80), new CGPoint (40, 24));
 			CreateButtonAtPoint ("Control-1", "" + noteDownArrow + noteDisplay, new CGSize (80, 80), new CGPoint (85, 24));
 			CreateButtonAtPoint ("Control+1", "" + noteUpArrow + noteDisplay, new CGSize (80, 80), new CGPoint (130, 24));
 			CreateButtonAtPoint ("Control+7", "" + octaveUpArrow + noteDisplay, new CGSize (80, 80), new CGPoint (175, 24));
 
-			CreateButtonAtPoint ("Settings", "" + pianoIcon + octaveUpArrow, 
+			CreateButtonAtPoint ("Instrument-", "" + octaveDownArrow + pianoIcon, 
+				new CGSize (120, 80), new CGPoint (this.Scene.View.Frame.Width - 120, 24));
+			CreateButtonAtPoint ("Instrument+", "" + pianoIcon + octaveUpArrow, 
 				new CGSize (120, 80), new CGPoint (this.Scene.View.Frame.Width - 60, 24));
 		}
 
@@ -261,19 +264,13 @@ namespace PianoTouch
 
 		void CreateInfoText ()
 		{
-//			motionManagerNode = new SKLabelNode (defaultFontName) {
-//				Text = "Piano",
-//				FontSize = 17,
-//				FontColor = UIColor.Black,
-//				Position = new CGPoint (80, Frame.Height / 6)
-//			};
-//
-//			AddChild (motionManagerNode);
 		}
 
 		MusicalTouches allTouches = 
 			new MusicalTouches(GameViewController.MidiControl, 
 				new OSVersionCheckStrategy());
+
+		AvailableSoundFonts allSoundFonts = new AvailableSoundFonts();
 
 		SKNode GetMusicalNodeAtLocation (CGPoint location)
 		{
@@ -289,12 +286,12 @@ namespace PianoTouch
 		bool LookForControlMessage (CGPoint location, bool process = true)
 		{
 			var controlNode = GetNodesAtPoint (location)
-				.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name) && n.Name.StartsWith ("Control"));
+				.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name) && (n.Name.StartsWith ("Control") || n.Name.StartsWith ("Instrument")));
 
 			if (process == false)
 				return controlNode != null;
 			
-			if (controlNode != null)
+			if (controlNode != null && !controlNode.Name.StartsWith ("Instrument"))
 			{
 				var amount = Convert.ToInt32 (controlNode.Name.Substring (7));
 				var newPosition = currentStartingNode;
@@ -303,19 +300,23 @@ namespace PianoTouch
 				{
 					case -7: 
 						newPosition -= 12;
+						DisplayCenteredText ("" + octaveDownArrow + noteDisplay);
 						break;
 					case 7: 
 						newPosition += 12;
+						DisplayCenteredText ("" + noteDisplay + octaveUpArrow);
 						break;
 					case 1:
 						newPosition++;
 						if (GetShapeForNote (newPosition) == NoteShape.BlackNote)
 							newPosition++;
+						DisplayCenteredText ("" + noteDisplay + noteUpArrow);
 						break;
 					case -1:
 						newPosition--;
 						if (GetShapeForNote (newPosition) == NoteShape.BlackNote)
 							newPosition--;
+						DisplayCenteredText ("" + noteDownArrow + noteDisplay);
 						break;
 				}
 
@@ -325,14 +326,19 @@ namespace PianoTouch
 			}
 
 			// Check for the Settings
-			var settingsNode = GetNodesAtPoint (location)
-				.FirstOrDefault (n => !String.IsNullOrEmpty (n.Name) && n.Name == "Settings");
-
-			if (settingsNode != null)
+			if (controlNode != null && controlNode.Name.StartsWith ("Instrument"))
 			{
 				// Change the instrument
+				SoundFontEntry newSoundFont;
 
+				if (controlNode.Name.EndsWith ("+"))
+					newSoundFont = allSoundFonts.MoveNext ();
+				else
+					newSoundFont = allSoundFonts.MoveBack ();
+				
+				ChangeInstrument (newSoundFont);
 
+				return true;
 			}
 
 			return false;
@@ -420,6 +426,56 @@ namespace PianoTouch
 					}
 				}
 			}
+		}
+
+		void ChangeInstrument (SoundFontEntry newSoundFont)
+		{
+			// Reload the new font
+			GameViewController.MidiControl.LoadInstrument ("SoundFonts", 
+				Path.GetFileNameWithoutExtension (newSoundFont.Filename),
+				Path.GetExtension (newSoundFont.Filename), 1);
+
+			var changeInstrumentNode = new SKLabelNode (defaultFontName) {
+				Text = "" + pianoIcon + " " + noteUpArrow + " " + newSoundFont.DisplayName,
+				FontSize = 66,
+				FontColor = UIColor.Black,
+				Position = new CGPoint (Frame.GetMidX (), Frame.GetMidY () / 2),
+				Color = UIColor.LightGray
+			};
+
+			AddChild (changeInstrumentNode);
+
+			// Fade it out
+			changeInstrumentNode.RunAction (SKAction.Sequence (
+				SKAction.WaitForDuration (0.55),
+				SKAction.FadeOutWithDuration (0.75f)), () => RemoveChildren (new SKNode[] {
+					changeInstrumentNode
+			}));
+		}
+
+		SKLabelNode lastCenteredTextNode;
+
+		void DisplayCenteredText(string text)
+		{
+			if (lastCenteredTextNode != null)
+				lastCenteredTextNode.RunAction (SKAction.FadeOutWithDuration (0.1));
+			
+			lastCenteredTextNode = new SKLabelNode (defaultFontName) {
+				Text = text,
+				FontSize = 66,
+				FontColor = UIColor.Black,
+				Position = new CGPoint (Frame.GetMidX (), Frame.GetMidY () / 2),
+				Color = UIColor.LightGray
+			};
+
+			AddChild (lastCenteredTextNode);
+
+			// Fade it out
+			lastCenteredTextNode.RunAction (SKAction.Sequence (
+				SKAction.WaitForDuration (0.55),
+				SKAction.FadeOutWithDuration (0.75f)), () => RemoveChildren (new SKNode[] {
+					lastCenteredTextNode
+				}));
 		}
 
 		public override void TouchesCancelled (NSSet touches, UIEvent evt)

@@ -41,9 +41,23 @@ namespace TouchInstruments.Core
 			graph.Start ();
 		}
 
-		void LoadInstrument (int preset)
+		public void LoadInstrument (int preset)
 		{
 			var soundFontPath = NSBundle.MainBundle.PathForResource ("ChoriumRevA", "SF2", "SoundFonts");
+			//var soundFontPath = NSBundle.MainBundle.PathForResource ("ELP_Piano_MDX7", "sf2", "SoundFonts");
+
+			var soundFontUrl = CFUrl.FromFile (soundFontPath);
+
+			samplerUnit.LoadInstrument (new SamplerInstrumentData (soundFontUrl, InstrumentType.SF2Preset) {
+				BankLSB = SamplerInstrumentData.DefaultBankLSB,
+				BankMSB = SamplerInstrumentData.DefaultMelodicBankMSB,
+				PresetID = (byte)preset,
+			});
+		}
+
+		public void LoadInstrument (string folder, string fontName, string extension, int preset)
+		{
+			var soundFontPath = NSBundle.MainBundle.PathForResource (fontName, extension, folder);
 			//var soundFontPath = NSBundle.MainBundle.PathForResource ("ELP_Piano_MDX7", "sf2", "SoundFonts");
 
 			var soundFontUrl = CFUrl.FromFile (soundFontPath);
