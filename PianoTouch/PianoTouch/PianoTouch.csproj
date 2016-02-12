@@ -108,28 +108,12 @@
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\GameScene.sks" />
-    <BundleResource Include="Resources\SoundFonts\ChoriumRevA.SF2" />
     <BundleResource Include="Resources\SoundFonts\Notes.txt" />
-    <BundleResource Include="Resources\SoundFonts\Chemical_Clarinet_MDX7.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Clean_Guitar.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Crazy_Crystal_MDX7.sf2" />
-    <BundleResource Include="Resources\SoundFonts\ELP_Piano_MDX7.sf2" />
-    <BundleResource Include="Resources\SoundFonts\ElPiano1.sf2" />
-    <BundleResource Include="Resources\SoundFonts\English_Horn.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Fretless_Bass_Stereo.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Jazz_Guitar.sf2" />
-    <BundleResource Include="Resources\SoundFonts\K_Strings.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Pianino.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Pigbon_MDX7.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Recorder_Soprano.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Roll_Pad_MDX7.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Synth_Bass.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Warm_Lead_MDX7.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Zed_Bass_2PM.sf2" />
-    <BundleResource Include="Resources\SoundFonts\Zero_Lead_MDX7.sf2" />
     <BundleResource Include="Resources\piano.png" />
     <BundleResource Include="Resources\piano%402x.png" />
     <BundleResource Include="Resources\LaunchImage.png" />
+    <BundleResource Include="Resources\SoundFonts\Piano.SF2" />
+    <BundleResource Include="Resources\SoundFonts\Clean_Guitar.sf2" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
@@ -138,6 +122,22 @@
   <ItemGroup>
     <None Include="Info.plist" />
     <None Include="Entitlements.plist" />
+    <None Include="Resources\SoundFonts\Chemical_Clarinet_MDX7.sf2" />
+    <None Include="Resources\SoundFonts\Crazy_Crystal_MDX7.sf2" />
+    <None Include="Resources\SoundFonts\ELP_Piano_MDX7.sf2" />
+    <None Include="Resources\SoundFonts\ElPiano1.sf2" />
+    <None Include="Resources\SoundFonts\English_Horn.sf2" />
+    <None Include="Resources\SoundFonts\Fretless_Bass_Stereo.sf2" />
+    <None Include="Resources\SoundFonts\Jazz_Guitar.sf2" />
+    <None Include="Resources\SoundFonts\K_Strings.sf2" />
+    <None Include="Resources\SoundFonts\Pianino.sf2" />
+    <None Include="Resources\SoundFonts\Pigbon_MDX7.sf2" />
+    <None Include="Resources\SoundFonts\Recorder_Soprano.sf2" />
+    <None Include="Resources\SoundFonts\Roll_Pad_MDX7.sf2" />
+    <None Include="Resources\SoundFonts\Synth_Bass.sf2" />
+    <None Include="Resources\SoundFonts\Warm_Lead_MDX7.sf2" />
+    <None Include="Resources\SoundFonts\Zed_Bass_2PM.sf2" />
+    <None Include="Resources\SoundFonts\Zero_Lead_MDX7.sf2" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />

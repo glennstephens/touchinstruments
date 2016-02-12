@@ -25,15 +25,15 @@ namespace TouchInstruments.Core
 		void CalculateDisplayName()
 		{
 			var filenameOnly = System.IO.Path.GetFileNameWithoutExtension (Filename);
-			var result = "";
+			var result = filenameOnly.Replace ('_', ' ');
 
-			foreach (char c in filenameOnly)
-				if (Char.IsLetterOrDigit (c)) {
-					if (Char.IsUpper (c)) {
-						result += " ";
-					}
-					result += c;
-				}
+//			foreach (char c in filenameOnly)
+//				if (Char.IsLetterOrDigit (c)) {
+//					if (Char.IsUpper (c)) {
+//						result += " ";
+//					}
+//					result += c;
+//				}
 
 			this.DisplayName = result;
 		}
