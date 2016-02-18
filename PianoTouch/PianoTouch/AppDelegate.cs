@@ -14,7 +14,18 @@ namespace PianoTouch
 
 		public override bool FinishedLaunching (UIApplication application, NSDictionary launchOptions)
 		{
-			Insights.Initialize("9935ba5f31a6b21aae61de2a87f7ad1a26884ff1");
+			#if DEBUG
+				Xamarin.Insights.Initialize (Insights.DebugModeKey);
+			#else
+				Insights.Initialize("9935ba5f31a6b21aae61de2a87f7ad1a26884ff1");
+
+				Insights.HasPendingCrashReport += (sender, isStartupCrash) => {
+					if (isStartupCrash)
+					{
+						Insights.PurgePendingCrashReports ().Wait ();
+					}
+				};
+			#endif
 
 			return true;
 		}
