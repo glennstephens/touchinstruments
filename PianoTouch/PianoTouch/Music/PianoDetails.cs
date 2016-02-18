@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TouchInstruments.Core
+namespace PianoTouch
 {
 	public class PianoDetails
 	{

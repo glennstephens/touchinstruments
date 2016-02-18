@@ -1,14 +1,12 @@
 ﻿using Foundation;
 using UIKit;
-using TouchInstruments.Core;
+using Xamarin;
 
 namespace PianoTouch
 {
 	[Register ("AppDelegate")]
 	public class AppDelegate : UIApplicationDelegate
 	{
-		// class-level declarations
-
 		public override UIWindow Window {
 			get;
 			set;
@@ -16,9 +14,7 @@ namespace PianoTouch
 
 		public override bool FinishedLaunching (UIApplication application, NSDictionary launchOptions)
 		{
-			var model = iOSHardware.GetModel ();
-
-			var iP5 = iOSDimensions.iPhone5Sizes;
+			Insights.Initialize("9935ba5f31a6b21aae61de2a87f7ad1a26884ff1");
 
 			return true;
 		}

@@ -4,20 +4,20 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace TouchInstruments.Core
+namespace PianoTouch
 {
 	public class SoundFontEntry
 	{
-		string _filename = null;
+		string filename = null;
 
 		public string Filename {
 			get
 			{
-				return _filename;
+				return filename;
 			} 
 			set 
 			{
-				_filename = value;
+				filename = value;
 				CalculateDisplayName ();
 			}
 		}
@@ -26,14 +26,6 @@ namespace TouchInstruments.Core
 		{
 			var filenameOnly = System.IO.Path.GetFileNameWithoutExtension (Filename);
 			var result = filenameOnly.Replace ('_', ' ');
-
-//			foreach (char c in filenameOnly)
-//				if (Char.IsLetterOrDigit (c)) {
-//					if (Char.IsUpper (c)) {
-//						result += " ";
-//					}
-//					result += c;
-//				}
 
 			this.DisplayName = result;
 		}
@@ -53,6 +45,7 @@ namespace TouchInstruments.Core
 	{		
 		List<SoundFontEntry> SoundFonts = new List<SoundFontEntry>();
 
+		//TODO: Add in file monitoring to pick up new/deleted sound fonts
 		public AvailableSoundFonts ()
 		{
 			LoadSoundFonts ();

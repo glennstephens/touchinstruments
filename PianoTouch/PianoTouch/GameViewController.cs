@@ -1,8 +1,6 @@
 ﻿using System;
-
 using SpriteKit;
 using UIKit;
-using TouchInstruments.Core;
 
 namespace PianoTouch
 {

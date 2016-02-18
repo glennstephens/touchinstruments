@@ -37,17 +37,17 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
-    <MtouchArch>ARMv7, ARMv7s, ARM64</MtouchArch>
+    <MtouchArch>ARM64</MtouchArch>
     <ConsolePause>false</ConsolePause>
-    <CodesignKey>iPhone Developer: Glenn Stephens (2HW3RSM87D)</CodesignKey>
+    <CodesignKey>iPhone Developer</CodesignKey>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <CodesignProvision>2f820973-67cb-4ea0-aac8-99c6bd669195</CodesignProvision>
+    <CodesignProvision>0d06aa55-b922-4bcb-80de-30d130c56e0d</CodesignProvision>
     <MtouchUseLlvm>true</MtouchUseLlvm>
     <MtouchUseSGen>true</MtouchUseSGen>
     <MtouchUseRefCounting>true</MtouchUseRefCounting>
     <MtouchLink>Full</MtouchLink>
-    <MtouchI18n>
-    </MtouchI18n>
+    <IpaPackageName>
+    </IpaPackageName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>full</DebugType>
@@ -87,6 +87,12 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.iOS" />
+    <Reference Include="Xamarin.Insights">
+      <HintPath>..\packages\Xamarin.Insights.1.11.4\lib\Xamarin.iOS10\Xamarin.Insights.dll</HintPath>
+    </Reference>
+    <Reference Include="PLCrashReporterUnifiedBinding">
+      <HintPath>..\packages\Xamarin.Insights.1.11.4\lib\Xamarin.iOS10\PLCrashReporterUnifiedBinding.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json" />
@@ -138,6 +144,7 @@
     <None Include="Resources\SoundFonts\Warm_Lead_MDX7.sf2" />
     <None Include="Resources\SoundFonts\Zed_Bass_2PM.sf2" />
     <None Include="Resources\SoundFonts\Zero_Lead_MDX7.sf2" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
@@ -150,17 +157,18 @@
     <Compile Include="TouchStrategy\BaseTouchStrategy.cs" />
     <Compile Include="TouchStrategy\MusicalTouch.cs" />
     <Compile Include="TouchStrategy\MusicalTouches.cs" />
+    <Compile Include="Music\AvailableSoundFonts.cs" />
+    <Compile Include="Music\MidiControl.cs" />
+    <Compile Include="Music\iOSDimensions.cs" />
+    <Compile Include="Music\iOSHardware.cs" />
+    <Compile Include="Music\PianoDetails.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
+  <Import Project="..\packages\Xamarin.Insights.1.11.4\build\Xamarin.iOS10\Xamarin.Insights.targets" Condition="Exists('..\packages\Xamarin.Insights.1.11.4\build\Xamarin.iOS10\Xamarin.Insights.targets')" />
   <ItemGroup>
     <Folder Include="Resources\SoundFonts\" />
     <Folder Include="TouchStrategy\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\TouchInstruments.Core\TouchInstruments.Core.csproj">
-      <Project>{44310946-41F9-46AE-8401-4A8444DD0B03}</Project>
-      <Name>TouchInstruments.Core</Name>
-    </ProjectReference>
+    <Folder Include="Music\" />
   </ItemGroup>
   <ItemGroup>
     <ITunesArtwork Include="iTunesArtwork" />

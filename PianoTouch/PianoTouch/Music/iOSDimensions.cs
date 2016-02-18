@@ -3,7 +3,7 @@ using UIKit;
 using System.Runtime.InteropServices;
 using ObjCRuntime;
 
-namespace TouchInstruments.Core
+namespace PianoTouch
 {
 	public class PhoneSize
 	{

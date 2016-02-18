@@ -1,7 +1,6 @@
 using System;
 using UIKit;
 using System.Collections.Generic;
-using TouchInstruments.Core;
 using System.Threading.Tasks;
 
 namespace PianoTouch
@@ -31,11 +30,6 @@ namespace PianoTouch
 			};
 
 			Touches [touch] = musicTouch;
-
-			// Get the volume for the note
-
-			// Play the midi note at that volume
-			//midi.PlayNote (note, 1, initialVolume);
 
 			if (volumeStrategy.UseInitialTouch) {
 				midi.NoteOn (note, initialVolume);

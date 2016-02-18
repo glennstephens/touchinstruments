@@ -6,11 +6,13 @@ using AudioUnit;
 using Foundation;
 using CoreFoundation;
 using CoreMidi;
-using AudioToolbox;
 using ObjCRuntime;
 
-namespace TouchInstruments.Core
+namespace PianoTouch
 {
+	// This class is based on the work from Xamarin MVP Frank Krueger and his gist for using MIDI 
+	// which can be found at: https://gist.github.com/praeclarum/143cb88ce836e476d701
+	// This is a tweaked version, fitted for the use of the app and using the Unified API
 	public class MidiControl 
 	{
 		AUGraph graph;
@@ -21,8 +23,6 @@ namespace TouchInstruments.Core
 			CreateAudioGraph ();
 
 			LoadInstrument (1);
-
-			// await PlayDynamicSong ();
 		}
 
 		void CreateAudioGraph ()
@@ -44,7 +44,6 @@ namespace TouchInstruments.Core
 		public void LoadInstrument (int preset)
 		{
 			var soundFontPath = NSBundle.MainBundle.PathForResource ("ChoriumRevA", "SF2", "SoundFonts");
-			//var soundFontPath = NSBundle.MainBundle.PathForResource ("ELP_Piano_MDX7", "sf2", "SoundFonts");
 
 			var soundFontUrl = CFUrl.FromFile (soundFontPath);
 
@@ -58,7 +57,6 @@ namespace TouchInstruments.Core
 		public void LoadInstrument (string folder, string fontName, string extension, int preset)
 		{
 			var soundFontPath = NSBundle.MainBundle.PathForResource (fontName, extension, folder);
-			//var soundFontPath = NSBundle.MainBundle.PathForResource ("ELP_Piano_MDX7", "sf2", "SoundFonts");
 
 			var soundFontUrl = CFUrl.FromFile (soundFontPath);
 
@@ -105,7 +103,7 @@ namespace TouchInstruments.Core
 		{
 			byte channel = 0;
 			var status = (MidiAction_NoteOn << 4) | channel;
-			var auStatus = samplerUnit.MusicDeviceMIDIEvent ((byte)status, (byte)note, (byte)velocity);
+			samplerUnit.MusicDeviceMIDIEvent ((byte)status, (byte)note, (byte)velocity);
 		}
 
 		public void NoteOff(int note)
@@ -114,9 +112,6 @@ namespace TouchInstruments.Core
 			var status = (MidiAction_ControlTypeAllSoundOff << 4) | channel;
 			samplerUnit.MusicDeviceMIDIEvent ((byte)status, (byte)note, (byte)0);
 		}
-
-		MidiClient midiClient;
-		MusicPlayer player;
 
 		unsafe void HandleMidiPackets (MidiPacket[] packets)
 		{
@@ -128,16 +123,11 @@ namespace TouchInstruments.Core
 				var data2 = p.Length > 2 ? bytes [2] : 0u;
 
 				var command = status >> 4;
-				//
 				if (command != 0x0F) {
-					//					var channel = status & 0x0F;
 					var note = (byte)(data1 & 0x7F);
 					var velocity = (byte)(data2 & 0x7F); 
 					samplerUnit.MusicDeviceMIDIEvent (status, note, velocity);
-					//					Console.WriteLine (channel);
 				} else {
-					//					var eox = bytes [p.Length - 1];
-					//					Console.WriteLine ("st={0:X2}", status);
 					MusicDeviceSysEx (samplerUnit.Handle, p.Bytes, p.Length);
 				}
 			}

@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using MediaPlayer;
 using CoreMotion;
-using TouchInstruments.Core;
 using System.Runtime.InteropServices;
 using System.IO;
 
@@ -43,9 +42,9 @@ namespace PianoTouch
 
 		double keyWidth;
 
-		string[] whiteKeyNames = new string[] { "C", "D", "E", "F", "G", "A", "B" };
-		int[] placements = new int[] { 0, 1, 3, 4, 5 };
-		string[] blackKeyNames = new string[] { "C#", "D#", "F#", "G#", "A#" };
+		public static string[] whiteKeyNames = new string[] { "C", "D", "E", "F", "G", "A", "B" };
+		public static int[] placements = new int[] { 0, 1, 3, 4, 5 };
+		public static string[] blackKeyNames = new string[] { "C#", "D#", "F#", "G#", "A#" };
 
 		List<SKNode> pianoNoteNodes = new List<SKNode>();
 		List<SKNode> whiteNotes = new List<SKNode>();
@@ -131,7 +130,7 @@ namespace PianoTouch
 				keyWidth = totalWidth / whiteNotesPerPage;
 			else {
 				// Get the actual size of the piano key in pixels based on the device
-				var size = TouchInstruments.Core.iOSDimensions.GetCurrentDevice ();
+				var size = iOSDimensions.GetCurrentDevice ();
 				keyWidth = size.MillimetersToPixels (PianoDetails.WhiteKeyWidthInMMs);
 			}
 
@@ -230,19 +229,9 @@ namespace PianoTouch
 		char noteDownArrow = '←';
 		char noteUpArrow = '→';
 		string pianoIcon = "🎹";
-		char gear = '⚙';
 
 		void CreateOctaveKeys ()
 		{
-//			// Get the rectangle
-//			var barTopLeft = this.Scene.ConvertPointFromView (new CGPoint(0, 0));
-//			var barBottomRight = this.Scene.ConvertPointFromView (new CGPoint(UIScreen.MainScreen.Bounds.Width, 40));
-//
-//			var mainToolbarBackground = SKShapeNode.FromRect (
-//				new CGRect(barTopLeft.X, barTopLeft.Y, barBottomRight.X - barTopLeft.X, barBottomRight.Y - barTopLeft.Y));
-//			mainToolbarBackground.FillColor = UIColor.FromRGB (222, 222, 222);
-//			mainToolbarBackground.StrokeColor = UIColor.FromRGB (211, 211, 211);
-
 			CreateButtonAtPoint ("Control-7", "" + octaveDownArrow + noteDisplay, new CGSize (80, 80), new CGPoint (40, 24));
 			CreateButtonAtPoint ("Control-1", "" + noteDownArrow + noteDisplay, new CGSize (80, 80), new CGPoint (85, 24));
 			CreateButtonAtPoint ("Control+1", "" + noteUpArrow + noteDisplay, new CGSize (80, 80), new CGPoint (130, 24));
@@ -257,10 +246,10 @@ namespace PianoTouch
 		void UpdateButtonControls()
 		{
 			RemoveChildren(buttonControls.ToArray());
-			buttonControls.ForEach (n => AddChild (n));
+			buttonControls.ForEach (AddChild);
 		}
 
-		string defaultFontName = "Avenir-Light";
+		const string defaultFontName = "Avenir-Light";
 
 		void CreateInfoText ()
 		{
@@ -361,7 +350,7 @@ namespace PianoTouch
 					var index = GetMidiNoteForName (node.Name);
 					if (index >= 0)
 					{
-						var musicTouch = allTouches.StartNote (touch, index);
+						allTouches.StartNote (touch, index);
 						PlayFadeOutNoteDisplay (node);
 					}
 				}
